@@ -13,7 +13,7 @@ namespace stockr.service
             Console.WriteLine("Svc_test: " + durr);
 
 
-            using (var ctx = new db.stockrContext())
+            using (var ctx = new db.StockrContext())
             {
                 var jjj = ctx.Symbol.OrderBy(x => Guid.NewGuid()).Select(x => x.Symbol1).Take(20);
 

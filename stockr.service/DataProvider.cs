@@ -10,7 +10,7 @@ namespace stockr.service
     {
         public void QuoteStagInsert(db.QuoteStg quoteStg)
         {
-            using (var ctx = new db.stockrContext()) {
+            using (var ctx = new db.StockrContext()) {
                 ctx.QuoteStg.Add(quoteStg);
             }
         }

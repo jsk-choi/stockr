@@ -1,17 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Text;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.Configuration;
 
 using stockr.service;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Binder;
-using Microsoft.Extensions.Configuration.Json;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 public class App
 {
@@ -19,6 +16,9 @@ public class App
     private ISvc_test _svc_Test;
 
     private IList<string> _body;
+
+    private int ctOne;
+    private int ctTwo;
 
     public App(IConfiguration config, ISvc_test svc_Test)
     {
@@ -28,18 +28,33 @@ public class App
         _body = new List<string>();
     }
 
-    public async Task Run()
+    public void dooParallel() {
+        Parallel.Invoke(
+            () => firstOne(),
+            () => SecondOne());
+    }
+
+    private void firstOne() {
+        var ct = 0;
+        do
+        {
+            Console.WriteLine($"from first ct : {(++ctOne).ToString("D4")} - second     ct : {(ctTwo).ToString("D4")}");
+            Thread.Sleep(578);
+        } while (true);
+    }
+    private void SecondOne() {
+        var ct = 0;
+        do
+        {
+            Console.WriteLine($"second     ct : {(++ctTwo).ToString("D4")} - from first ct : {(ctOne).ToString("D4")}");
+            Thread.Sleep(Convert.ToInt16(578.0 * 1.4372));
+        } while (true);
+    }
+
+    private async Task Run()
     {
+        int ctn = 0;
         _svc_Test.DoTheThing("durrtho");
-
-        //Console.Write("Attempting to open stream\n");
-
-        //var url_quote_sse = "https://cloud-sse.iexapis.com/stable/stocksUSNoUTP?symbols=ACCD,ADM,AFG,AGO,AINV,ALIM,AMAL,AMRN,AOA,AQB,AROC,ASTE,ATXI,AWI,BAC-B,BBK,BDCX,BGB,BIOL,BLCT,BNDW,BPY,BSBK,BSX-A,BXS,CANG,CBT,CDEV,CETX,CHCO,CHSCO,CL,CLXT,CNF,COLB,CPRI,CRSAW,CTBB,CVCY,CYCN,DBS&token=pk_6936d6bbead54838ab45b0f845ece345";
-
-        //var response = OpenSSEStream(url_quote_sse);
-
-        //Console.Write("Success! \n");
-
 
         HttpClient client = new HttpClient();
         string url = $"https://cloud-sse.iexapis.com/stable/stocksUSNoUTP?symbols=ACCD,ADM,AFG,AGO,AINV,ALIM,AMAL,AMRN,AOA,AQB,AROC,ASTE,ATXI,AWI,BAC-B,BBK,BDCX,BGB,BIOL,BLCT,BNDW,BPY,BSBK,BSX-A,BXS,CANG,CBT,CDEV,CETX,CHCO,CHSCO,CL,CLXT,CNF,COLB,CPRI,CRSAW,CTBB,CVCY,CYCN,DBS&token=pk_6936d6bbead54838ab45b0f845ece345";
@@ -54,7 +69,8 @@ public class App
                     while (!streamReader.EndOfStream)
                     {
                         var message = await streamReader.ReadLineAsync();
-                        Console.WriteLine($"Received price update: {message}");
+                        Console.WriteLine((++ctn).ToString("D6"));
+                        Console.WriteLine(message);
                     }
                 }
             }
@@ -70,42 +86,4 @@ public class App
         }
     }
 
-
-    private Stream OpenSSEStream(string url)
-    {
-        var request = WebRequest.Create(new Uri(url));
-        ((HttpWebRequest)request).AllowReadStreamBuffering = false;
-        var response = request.GetResponse();
-        var stream = response.GetResponseStream();
-
-        ReadStreamForever(stream);
-
-        return stream;
-    }
-
-    private void ReadStreamForever(Stream stream)
-    {
-        var encoder = new UTF8Encoding();
-        var buffer = new byte[16777216];
-        while (true)
-        {
-            //TODO: Better evented handling of the response stream
-
-            if (stream.CanRead)
-            {
-                int len = stream.Read(buffer, 0, buffer.Length);
-                if (len > 0)
-                {
-                    var text = encoder.GetString(buffer, 0, len);
-
-                    var lines = text.Trim().Split('\n');
-                    for (int i = 0; i < lines.Length; i++)
-                    {
-                        _body.Add(lines[i]);
-                    }
-                }
-            }
-            //System.Threading.Thread.Sleep(250);
-        }
-    }
 }

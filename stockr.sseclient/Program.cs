@@ -52,7 +52,8 @@ public class Application
         var serviceProvider = services.BuildServiceProvider();
 
         // calls the Run method in App, which is replacing Main
-        serviceProvider.GetService<App>().Run().GetAwaiter().GetResult(); ;
+        //serviceProvider.GetService<App>().Run().GetAwaiter().GetResult();
+        serviceProvider.GetService<App>().dooParallel();
     }
 
     private static IServiceCollection ConfigureServices()

@@ -5,21 +5,19 @@ using Microsoft.Extensions.Configuration;
 
 namespace stockr.mssql
 {
-    public partial class stockrContext : DbContext
+    public partial class StockrContext : DbContext
     {
         IConfiguration _conf;
 
-        public stockrContext()
+        public StockrContext()
         {
-            var builder = new ConfigurationBuilder()
+            _conf = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("app.secret", optional: true, reloadOnChange: true);
-            _conf = builder.Build();
-
-            var jjj = _conf[""];
+                .AddJsonFile("app.secret.json", optional: true, reloadOnChange: true)
+                .Build();
         }
 
-        public stockrContext(DbContextOptions<stockrContext> options)
+        public StockrContext(DbContextOptions<StockrContext> options)
             : base(options)
         {
         }
@@ -43,7 +41,6 @@ namespace stockr.mssql
         {
             if (!optionsBuilder.IsConfigured)
             {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
                 optionsBuilder.UseSqlServer(_conf["DB:ConnectionString"]);
             }
         }
