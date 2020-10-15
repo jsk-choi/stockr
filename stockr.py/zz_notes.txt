@@ -1,0 +1,17 @@
+nohup bash a3.sh -H > /dev/null 2>&1 &
+
+pkill -f "python3 /mnt/jfs*"
+nohup python3 /mnt/jfs/a/stockr-py/stockr-py/getquotes.py "https://cloud-sse.iexapis.com/stable/stocksUSNoUTP?symbols=BFAM,BFC,BFIN,BFS,BFST,BFYT,BG,BGCP,BGFV,BGI,BGS,BGSF,BH,BH.A,BHAT,BHB,BHC,BHE,BHF,BHLB,BHR,BHTG,BHVN,BIG,BIGC,BIIB,BILL,BIMI,BIO,BIO.B,BIOC,BIOL,BIOX,BIP,BIPC,BJ,BJRI,BK,BKCC,BKD&token=pk_6936d6bbead54838ab45b0f845ece345" > /dev/null 2>&1 &
+nohup python3 /mnt/jfs/a/stockr-py/stockr-py/getquotes.py "https://cloud-sse.iexapis.com/stable/stocksUSNoUTP?symbols=BKE,BKEP,BKH,BKI,BKNG,BKR,BKSC,BKTI,BKU,BKYI,BL,BLBD,BLCM,BLD,BLDP,BLDR,BLFS,BLI,BLIN,BLK,BLKB,BLL,BLMN,BLNK,BLPH,BLU,BLUE,BLX,BMCH,BMI,BMO,BMRA,BMRC,BMRG,BMRN,BMTC,BMY,BNED,BNFT,BNGO&token=pk_6936d6bbead54838ab45b0f845ece345" > /dev/null 2>&1 &
+
+
+
+pkill -f "python3 /mnt/jfs*"
+
+
+
+for file in /dir/*
+do
+  cmd [option] "$file" >> results.out
+done
+
