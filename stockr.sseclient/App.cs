@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,18 +15,26 @@ public class App
 {
     private readonly IConfiguration _config;
     private ISvc_test _svc_Test;
+    private IProcessor _processor;
 
     private IList<string> _body;
 
-    private int ctOne;
-    private int ctTwo;
+    private int ctr;
+    private int ct;
+    private List<string> vals;
 
-    public App(IConfiguration config, ISvc_test svc_Test)
+    public App(IConfiguration config, ISvc_test svc_Test, IProcessor processor)
     {
         _config = config;
         _svc_Test = svc_Test;
+        _processor = processor;
 
         _body = new List<string>();
+
+        vals = new List<string>();
+
+        ct = 0;
+        ctr = 0;
     }
 
     public void dooParallel() {
@@ -35,23 +44,25 @@ public class App
     }
 
     private void firstOne() {
-        var ct = 0;
         do
         {
-            Console.WriteLine($"from first ct : {(++ctOne).ToString("D4")} - second     ct : {(ctTwo).ToString("D4")}");
-            Thread.Sleep(578);
+            vals.Add((++ct).ToString("D6"));
+            Thread.Sleep(638);
         } while (true);
     }
     private void SecondOne() {
-        var ct = 0;
         do
         {
-            Console.WriteLine($"second     ct : {(++ctTwo).ToString("D4")} - from first ct : {(ctOne).ToString("D4")}");
-            Thread.Sleep(Convert.ToInt16(578.0 * 1.4372));
+            Thread.Sleep(4000);
+            var pvals = vals;
+            vals = new List<string>();
+
+            Console.WriteLine($"series {(++ctr).ToString("D4")} : {string.Join(',', pvals)}");
+
         } while (true);
     }
 
-    private async Task Run()
+    public async Task Run()
     {
         int ctn = 0;
         _svc_Test.DoTheThing("durrtho");
@@ -63,14 +74,23 @@ public class App
         {
             try
             {
-                Console.WriteLine("Establishing connection");
                 using (var streamReader = new StreamReader(await client.GetStreamAsync(url)))
                 {
                     while (!streamReader.EndOfStream)
                     {
                         var message = await streamReader.ReadLineAsync();
-                        Console.WriteLine((++ctn).ToString("D6"));
-                        Console.WriteLine(message);
+
+                        if (message.Contains("data: "))
+                            _body.Add(message);
+
+                        if (_body.Count == 10) {
+
+                            var sendbody = _body.ToList();
+                            _body.Clear();
+
+                            Parallel.Invoke(() => ProcessQuotes(sendbody));
+                            
+                        }
                     }
                 }
             }
@@ -81,9 +101,13 @@ public class App
                 //Since this is a simple example, i'm always going to retry
                 Console.WriteLine($"Error: {ex.Message}");
                 Console.WriteLine("Retrying in 2 seconds");
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                await Task.Delay(TimeSpan.FromSeconds(2));
             }
         }
     }
 
+    private void ProcessQuotes(List<string> sendbody)
+    {
+        var quotestag = _processor.ConvertJsonToModel(sendbody).GetAwaiter().GetResult();
+    }
 }

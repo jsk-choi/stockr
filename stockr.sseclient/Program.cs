@@ -52,8 +52,8 @@ public class Application
         var serviceProvider = services.BuildServiceProvider();
 
         // calls the Run method in App, which is replacing Main
-        //serviceProvider.GetService<App>().Run().GetAwaiter().GetResult();
-        serviceProvider.GetService<App>().dooParallel();
+        serviceProvider.GetService<App>().Run().GetAwaiter().GetResult();
+        //serviceProvider.GetService<App>().dooParallel();
     }
 
     private static IServiceCollection ConfigureServices()
@@ -64,6 +64,8 @@ public class Application
         services.AddSingleton(config);
 
         services.AddTransient<ISvc_test, Svc_test>();
+        services.AddTransient<IProcessor, Processor>();
+        
         // required to run the application
         services.AddTransient<App>();
 
