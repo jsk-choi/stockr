@@ -7,7 +7,7 @@ namespace stockr.mssql
 {
     public partial class StockrContext : DbContext
     {
-        IConfiguration _conf;
+        readonly IConfiguration _conf;
 
         public StockrContext()
         {
@@ -56,13 +56,12 @@ namespace stockr.mssql
 
             modelBuilder.Entity<Log>(entity =>
             {
-                entity.Property(e => e.DateModified)
+                entity.Property(e => e.SystemTime)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Msg).HasMaxLength(2500);
-
-                entity.Property(e => e.SystemTime).HasColumnType("datetime");
+                entity.Property(e => e.Catg).HasMaxLength(20);
             });
 
             modelBuilder.Entity<MarketOpen>(entity =>

@@ -9,5 +9,6 @@ namespace stockr.service
     public interface IProcessor
     {
         Task<IEnumerable<db.QuoteStg>> ConvertJsonToModel(IEnumerable<string> body);
+        
     }
 }

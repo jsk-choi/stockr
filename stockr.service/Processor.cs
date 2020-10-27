@@ -11,6 +11,13 @@ namespace stockr.service
 {
     public class Processor : IProcessor
     {
+        private readonly IDataProvider _dataProvider;
+
+        public Processor(IDataProvider dataProvider)
+        {
+            _dataProvider = dataProvider;
+        } 
+
         public async Task<IEnumerable<db.QuoteStg>> ConvertJsonToModel(IEnumerable<string> body)
         {
             var retval = new List<db.QuoteStg>();
@@ -26,7 +33,7 @@ namespace stockr.service
                 }
                 catch (Exception ex)
                 {
-                    // TODO
+                    _dataProvider.Log(ex.Message, "err");
                 }
             }
 

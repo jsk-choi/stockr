@@ -13,62 +13,46 @@ using stockr.service;
 
 public class App
 {
+    private readonly ISvc_test _svc_Test;
+
     private readonly IConfiguration _config;
-    private ISvc_test _svc_Test;
-    private IProcessor _processor;
+    private readonly IProcessor _processor;
+    private readonly IDataProvider _dataProvider;
 
-    private IList<string> _body;
+    private (DateTime tmp, IList<string> body) _body;
 
-    private int ctr;
-    private int ct;
-    private List<string> vals;
-
-    public App(IConfiguration config, ISvc_test svc_Test, IProcessor processor)
+    public App(IConfiguration config, ISvc_test svc_Test, IProcessor processor, IDataProvider dataProvider)
     {
         _config = config;
         _svc_Test = svc_Test;
         _processor = processor;
+        _dataProvider = dataProvider;
 
-        _body = new List<string>();
-
-        vals = new List<string>();
-
-        ct = 0;
-        ctr = 0;
+        _body.tmp = DateTime.Now;
+        _body.body = new List<string>();
     }
 
-    public void dooParallel() {
-        Parallel.Invoke(
-            () => firstOne(),
-            () => SecondOne());
-    }
-
-    private void firstOne() {
-        do
+    public async Task DooParallel(string durr = "") {
+        try
         {
-            vals.Add((++ct).ToString("D6"));
-            Thread.Sleep(638);
-        } while (true);
-    }
-    private void SecondOne() {
-        do
+            Task t1 = Task.Run(() => ProcessOnTimer());
+            Task t2 = Task.Run(() => Run(durr));
+
+            await Task.WhenAll(t2, t1);
+        }
+        finally
         {
-            Thread.Sleep(4000);
-            var pvals = vals;
-            vals = new List<string>();
-
-            Console.WriteLine($"series {(++ctr).ToString("D4")} : {string.Join(',', pvals)}");
-
-        } while (true);
+        }
     }
 
-    public async Task Run()
+    private async Task Run(string jjj = "")
     {
-        int ctn = 0;
-        _svc_Test.DoTheThing("durrtho");
+        _svc_Test.DoTheThing(jjj);
 
         HttpClient client = new HttpClient();
         string url = $"https://cloud-sse.iexapis.com/stable/stocksUSNoUTP?symbols=ACCD,ADM,AFG,AGO,AINV,ALIM,AMAL,AMRN,AOA,AQB,AROC,ASTE,ATXI,AWI,BAC-B,BBK,BDCX,BGB,BIOL,BLCT,BNDW,BPY,BSBK,BSX-A,BXS,CANG,CBT,CDEV,CETX,CHCO,CHSCO,CL,CLXT,CNF,COLB,CPRI,CRSAW,CTBB,CVCY,CYCN,DBS&token=pk_6936d6bbead54838ab45b0f845ece345";
+        int msgSize = _config.GetValue<int>("AppConfig:MessageSizeMin");
+        int batchSize = _config.GetValue<int>("AppConfig:QuoteBatchSize");
 
         while (true)
         {
@@ -80,34 +64,55 @@ public class App
                     {
                         var message = await streamReader.ReadLineAsync();
 
-                        if (message.Contains("data: "))
-                            _body.Add(message);
+                        if (message.Contains("data: ") && message.Length > msgSize) {
+                            _body.tmp = DateTime.Now;
+                            _body.body.Add(message);
+                        }
 
-                        if (_body.Count == 10) {
-
-                            var sendbody = _body.ToList();
-                            _body.Clear();
-
-                            Parallel.Invoke(() => ProcessQuotes(sendbody));
-                            
+                        if (_body.body.Count == batchSize) {
+                            await SendToProcess();
                         }
                     }
                 }
             }
             catch (Exception ex)
-            {
-                //Here you can check for 
-                //specific types of errors before continuing
-                //Since this is a simple example, i'm always going to retry
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.WriteLine("Retrying in 2 seconds");
-                await Task.Delay(TimeSpan.FromSeconds(2));
+            {                
+                _dataProvider.Log(ex.Message, "err");
             }
         }
     }
 
-    private void ProcessQuotes(List<string> sendbody)
+    private async Task SendToProcess()
     {
-        var quotestag = _processor.ConvertJsonToModel(sendbody).GetAwaiter().GetResult();
+        var sendbody = _body.body.ToList();
+        _body.tmp = DateTime.Now;
+        _body.body.Clear();
+
+        await ProcessQuotes(sendbody);
+    }
+
+    private async Task ProcessOnTimer()
+    {
+        var interv = _config.GetValue<int>("AppConfig:ProcessOnTimerInterval");
+        
+        while (true) {
+
+            var interval = interv * 60 * 1000;
+
+            //Thread.Sleep(interval);
+            Thread.Sleep(6000);
+
+            _dataProvider.Log($"On ProcessOnTimer", "info");
+
+            if ((DateTime.Now - _body.tmp).TotalMilliseconds > interval && _body.body.Count() > 0) {
+                await SendToProcess();
+            }
+        }
+    }
+    private async Task ProcessQuotes(List<string> sendbody)
+    {
+        _dataProvider.Log($"Loaded ct : {sendbody.Count()}", "info");
+        var quotestag = await _processor.ConvertJsonToModel(sendbody);
+        _dataProvider.QuoteStagInsert(quotestag);
     }
 }
