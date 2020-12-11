@@ -7,6 +7,7 @@ import db.log as log
 from db.dbrep import dbrep
 
 dbsymins = dbrep('Quote_Stg')
+zzz = 1
 
 def quote_surr(val):
     return "'" + str(val).replace("'", "''").replace(' ', '') + "'"
@@ -66,15 +67,14 @@ def tops_quote():
 
     ii = 0
 
-    ff = 1/0
-
     with urllib.request.urlopen("https://api.iextrading.com/1.0/tops") as url:
         
         quotes = json.loads(url.read().decode())
 
         msg = f'tops ct {len(quotes)}'
-        print(msg)
+        print(f'{zzz} : {msg}')
         log.logmsg(msg)
+        zzz += 1
 
         qs = []
 
@@ -97,8 +97,6 @@ def tops_quote():
 
 #if __name__ == '__main__':
 #    tops_quote()
-
-#zzz = 1
 
 while True:
     #print(f"{str(zzz).zfill(5)} :: {cf.interval}")
