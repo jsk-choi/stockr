@@ -61,7 +61,8 @@ namespace stockr.mssql
                     .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Msg).HasMaxLength(2500);
-                entity.Property(e => e.Catg).HasMaxLength(20);
+                entity.Property(e => e.Catg).HasMaxLength(50);
+                entity.Property(e => e.Src).HasMaxLength(50);
             });
 
             modelBuilder.Entity<MarketOpen>(entity =>

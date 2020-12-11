@@ -7,6 +7,7 @@ namespace stockr.mssql
     {
         public int Id { get; set; }
         public DateTime SystemTime { get; set; }
+        public string Src { get; set; }
         public string Msg { get; set; }
         public string Catg { get; set; }
     }

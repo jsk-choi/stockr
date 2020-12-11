@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "stockr.sseclient": {
+      "commandName": "Project",
+      "commandLineArgs": "\"https://cloud-sse.iexapis.com/stable/stocksUSNoUTP?token=pk_6936d6bbead54838ab45b0f845ece345&symbols=A,AA,AAA,AAAU,AACG,AACQ,AACQU,AACQW,AADR,AAIC,AAIC-B,AAIC-C,AAL,AAMC,AAME,AAN,AAOI,AAON,AAP,AAPL,AAT,AAU,AAWW,AAXJ,AAXN,AB,ABB,ABBV,ABC,ABCB,ABCM,ABEO,ABEQ,ABEV,ABG,ABIO,ABM,ABMD,ABR,ABR-A,ABR-B,ABR-C,ABT,ABTX,ABUS\" A_ABUS"
+    }
+  }
+}

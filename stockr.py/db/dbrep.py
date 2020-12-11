@@ -18,16 +18,16 @@ class dbrep:
                 cursor.execute(spname)
                 cursor.commit()
 
-    def sp_exec(self, spname, param, vals):
+    #def sp_exec(self, spname, param, vals):
 
-        sql = "EXEC " + spname + " " + param
-        conn = pyodbc.connect(sec.db_conn)
+    #    sql = "EXEC " + spname + " " + param
+    #    conn = pyodbc.connect(sec.db_conn)
 
-        with conn:
-            cursor = conn.cursor()
-            with cursor:
-                cursor.execute(sql, vals)
-                cursor.commit()
+    #    with conn:
+    #        cursor = conn.cursor()
+    #        with cursor:
+    #            cursor.execute(sql, vals)
+    #            cursor.commit()
 
     def get_rows(self, cols, where):
 

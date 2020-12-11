@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using db = stockr.mssql;
@@ -10,6 +12,7 @@ namespace stockr.service
     public class DataProvider : IDataProvider
     {
         private int logCt { get; set; }
+        public string srcid { get; set; }
 
         public DataProvider() {
             logCt = 1;
@@ -57,9 +60,25 @@ namespace stockr.service
                 {
                     ctx.Log.Add(new db.Log { 
                         Catg = catg,
+                        Src = srcid,
                         Msg = msg
                     });
                     ctx.SaveChanges();
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public IList<db.VSymbols> SymbolsGet()
+        {
+            try
+            {
+                using (var ctx = new db.StockrContext())
+                {
+                    return ctx.VSymbols.Select(x => x).ToList();
                 }
             }
             catch (Exception)

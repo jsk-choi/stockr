@@ -13,3 +13,4 @@ script_command = 'python3 %s/getquotes.py "%s" %s &'
 bulk_file_path = '/tmp/bulk/'
 bulk_file = 'sqlbulk.dat'
 
+interval = 20

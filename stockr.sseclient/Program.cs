@@ -8,11 +8,17 @@ using stockr.service;
 
 public class Application
 {
-    public static void Main()
+    public static void Main(string[] args)
     {
+        Console.WriteLine(args.Length);
+        foreach (var item in args)
+        {
+            Console.WriteLine(item);
+        }
+
         var services = ConfigureServices();
         var serviceProvider = services.BuildServiceProvider();
-        serviceProvider.GetService<App>().DooParallel("aaa fff").GetAwaiter().GetResult();
+        serviceProvider.GetService<App>().DooParallel(args[0], args[1]).GetAwaiter().GetResult();
     }
 
     private static IServiceCollection ConfigureServices()

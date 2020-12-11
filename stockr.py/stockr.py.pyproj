@@ -5,7 +5,7 @@
     <ProjectGuid>025bd6b7-bc6e-44a7-8fa2-5843cc6ebf85</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>symbols.py</StartupFile>
+    <StartupFile>getquotes_tops.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -28,6 +28,7 @@
     <Compile Include="db\dbrep.py" />
     <Compile Include="db\log.py" />
     <Compile Include="getquotes.py" />
+    <Compile Include="getquotes_tops.py" />
     <Compile Include="_bulkdata.py" />
     <Compile Include="quote.py" />
     <Compile Include="main.py" />

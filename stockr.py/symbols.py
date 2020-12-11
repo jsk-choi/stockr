@@ -9,7 +9,7 @@ import db.log as log
 def symbols_load():
 
     counter = 0
-    response = urllib.request.urlopen(cf.url_symbols_all)
+    response = urllib.request.urlopen('https://api.iextrading.com/1.0/ref-data/symbols')
     symbols = json.loads(response.read())
 
     log.logmsg("sym ct - " + str(len(symbols)))
