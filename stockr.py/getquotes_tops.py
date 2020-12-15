@@ -7,7 +7,13 @@ import db.log as log
 from db.dbrep import dbrep
 
 dbsymins = dbrep('Quote_Stg')
-zzz = 1
+
+def logwrite(msg, logit = True):
+    
+    print(f'{time.strftime("%Y-%m-%d %H:%M:%S")} : {msg}')
+
+    if logit: 
+        log.logmsg(msg)
 
 def quote_surr(val):
     return "'" + str(val).replace("'", "''").replace(' ', '') + "'"
@@ -59,9 +65,29 @@ def build_ins(q):
 
     return ins_val 
 
-def insert_data(qs):
+def build_ins_topslast(q):
+
+    ins_val = '('
+
+    val_tmp = q.setdefault('symbol', None)
+    ins_val += quote_surr(str('NULL' if val_tmp is None else val_tmp.strip())) + ','
+
+    val_tmp = q.setdefault('price', None)
+    ins_val += str('NULL' if val_tmp is None else val_tmp) + ','
+
+    val_tmp = q.setdefault('time', None)
+    ins_val += str('NULL' if val_tmp is None else val_tmp) + ','
+
+    val_tmp = q.setdefault('size', None)
+    ins_val += str('NULL' if val_tmp is None else val_tmp)
+
+    ins_val += ')'
+
+    return ins_val 
+
+def insert_data(cols, qs):
     vals = ','.join(qs)    
-    dbsymins.insert_row('', vals[1:-1])
+    dbsymins.insert_row(cols, vals[1:-1])
 
 def tops_quote():
 
@@ -72,10 +98,8 @@ def tops_quote():
         quotes = json.loads(url.read().decode())
 
         msg = f'tops ct {len(quotes)}'
-        print(f'{zzz} : {msg}')
-        log.logmsg(msg)
-        zzz += 1
-
+        logwrite(msg)
+    
         qs = []
 
         for q in quotes:
@@ -83,30 +107,75 @@ def tops_quote():
             qs.append(build_ins(q))
             ii += 1
 
-            if ii == 990:
+            if ii == 999:
 
-                insert_data(qs)
+                insert_data('', qs)
+                logwrite(f'  {len(qs)}', False)
 
                 qs = []
                 ii = 0
 
         if len(qs) > 0:
-            insert_data(qs)
+            insert_data('', qs)
+            logwrite(f'  {len(qs)}', False)
 
-    dbsymins.sp_exec('EXEC spQuotesConsolidation')
+    dbsymins.sp_exec('EXEC spQuotesConsolidation_Tops')
+
+
+def topslast_quote():
+
+    ii = 0
+
+    ins_cols = 'symbol, lastSalePrice, lastUpdated, volume'
+
+    with urllib.request.urlopen("https://api.iextrading.com/1.0/tops/last") as url:
+        
+        quotes = json.loads(url.read().decode())
+
+        msg = f'tops last ct {len(quotes)}'
+        logwrite(msg)
+
+        qs = []
+
+        for q in quotes:
+            
+            qs.append(build_ins_topslast(q))
+            ii += 1
+
+            if ii == 999:
+
+                insert_data(ins_cols, qs)
+                logwrite(f'  {len(qs)}', False)
+
+                qs = []
+                ii = 0
+
+        if len(qs) > 0:
+            insert_data(ins_cols, qs)
+            logwrite(f'  {len(qs)}', False)
+
+    # dbsymins.sp_exec('EXEC spQuotesConsolidation_TopsLast')
+
 
 #if __name__ == '__main__':
 #    tops_quote()
 
+topsct = 0
 while True:
-    #print(f"{str(zzz).zfill(5)} :: {cf.interval}")
-    #zzz += 1   
-
+    
     try:
-        tops_quote()
+
+        if topsct == 0:
+            # tops_quote()
+            topsct = cf.tops_freq
+
+        topslast_quote()
+        
+        topsct -= 1
+
     except:
         err = f'error : {sys.exc_info()}'
-        log.logmsg(err)
+        logwrite(err)
 
     time.sleep(cf.interval)
 
