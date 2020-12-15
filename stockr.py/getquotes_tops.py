@@ -154,7 +154,7 @@ def topslast_quote():
             insert_data(ins_cols, qs)
             logwrite(f'  {len(qs)}', False)
 
-    # dbsymins.sp_exec('EXEC spQuotesConsolidation_TopsLast')
+    dbsymins.sp_exec('EXEC spQuotesConsolidation_TopsLast')
 
 
 #if __name__ == '__main__':
